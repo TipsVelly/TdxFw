@@ -1,8 +1,11 @@
+# main.py
+
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget
-from header import Header
-from side_menu import SideMenu
-from content_area import ContentArea
+from views.header import Header
+from views.side_menu import SideMenu
+from views.content_area import ContentArea
+from widgets.content_manager import get_content_widget
 
 
 class MainApp(QMainWindow):
@@ -34,23 +37,12 @@ class MainApp(QMainWindow):
         self.side_menu = SideMenu()
         self.side_menu.setFixedWidth(200)  # 메뉴 너비를 200px로 고정
         body_layout.addWidget(self.side_menu)
-        self.connect_side_menu_buttons()
+
         # 콘텐츠 영역 위젯 추가
         self.content_area = ContentArea()
-        self.content_area.setStyleSheet("background-color: #ffffff;")  # 콘텐츠 영역에 배경색과 경계선 적용
+        # self.content_area.setStyleSheet("background-color: #ffffff;")  # 콘텐츠 영역에 배경색과 경계선 적용
         body_layout.addWidget(self.content_area)
-        self.setStyleSheet("""
-            #contentArea {
-                background-color: #ffffff;  /* 콘텐츠 영역 배경: 흰색 */
-            }
-            #titleWidget {
-                background-color: #f0f0f0;  /* 타이틀 영역 배경: 연한 회색 */
-                border-bottom: 1px solid #cccccc;  /* 하단 경계선 */
-            }
-            #contentWidget {
-                background-color: #ffffff;  /* 콘텐츠 영역 배경: 흰색 */
-            }
-        """)
+
         # 본문 레이아웃을 메인 레이아웃에 추가
         main_layout.addLayout(body_layout)
 
@@ -60,12 +52,30 @@ class MainApp(QMainWindow):
         # 메인 위젯을 QMainWindow의 중앙에 배치
         self.setCentralWidget(main_widget)
 
+        # 스타일 시트를 메인 윈도우에 설정
+        self.setStyleSheet("""
+        
+            #titleWidget {
+                background-color: #ffffff;  /* 타이틀 영역 배경: 연한 회색 */
+                border-bottom: 1px solid #cccccc;  /* 하단 경계선 */
+            }
+         
+        """)
+
+        # 사이드 메뉴 버튼과 시그널 연결
+        self.connect_side_menu_buttons()
+
     def connect_side_menu_buttons(self):
         for button in self.side_menu.menu_buttons:
             button.clicked.connect(self.handle_menu_button_clicked)
 
     def handle_menu_button_clicked(self, menu_name):
         self.content_area.set_title(menu_name)
+        content_widget = get_content_widget(menu_name)
+        if content_widget is not None:
+            self.content_area.set_content_widget(content_widget)
+        else:
+            self.content_area.set_content_widget(QWidget())  # 빈 위젯 설정
 
 
 if __name__ == "__main__":

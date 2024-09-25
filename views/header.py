@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QPalette, QColor, QPixmap, QIcon, QCursor
 from PyQt5.QtCore import QSize, Qt
 
+
 class HoverButton(QPushButton):
     def __init__(self, icon_path, parent=None):
         super().__init__(parent)
@@ -18,6 +19,7 @@ class HoverButton(QPushButton):
     def leaveEvent(self, event):
         self.unsetCursor()  # 커서 기본 상태로 복구
         super().leaveEvent(event)
+
 
 class Header(QWidget):
     def __init__(self):

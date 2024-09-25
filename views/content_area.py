@@ -65,7 +65,7 @@ class ContentArea(QWidget):
                 }
                 
             QWidget#contentArea{
-                background-color : #000000;                            
+                background-color : #f0f0f0;                            
             }
        
         """)

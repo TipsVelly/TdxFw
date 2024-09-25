@@ -4,6 +4,10 @@ from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QPalette, QColor, QPixmap, QIcon, QCursor
 from PyQt5.QtCore import QSize, Qt, QPoint
 
+"""
+커스텀 헤더 적용 시 아이콘 추가 필요, 커스텀 헤더 더블클릭 시 현재 상태값에 따른 화면 확대, 축소 기능 추가 필요
+"""
+
 
 class HoverButton(QPushButton):
     def __init__(self, icon_path, parent=None):

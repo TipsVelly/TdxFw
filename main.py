@@ -45,7 +45,6 @@ class MainApp(QMainWindow):
 
         # 콘텐츠 영역 위젯 추가
         self.content_area = ContentArea()
-        self.content_area.setStyleSheet("background-color: #ffffff;")  # 콘텐츠 영역에 배경색과 경계선 적용
         body_layout.addWidget(self.content_area)
 
         # 본문 레이아웃을 메인 레이아웃에 추가
@@ -60,14 +59,14 @@ class MainApp(QMainWindow):
         # 스타일 시트를 메인 윈도우에 설정
         self.setStyleSheet("""
             #contentArea {
-                background-color: #ffffff;  /* 콘텐츠 영역 배경: 흰색 */
+                background-color: #f0f0f0;  /* 콘텐츠 영역 배경: 흰색 */
             }
             #titleWidget {
                 background-color: #f0f0f0;  /* 타이틀 영역 배경: 연한 회색 */
                 border-bottom: 1px solid #cccccc;  /* 하단 경계선 */
             }
             #contentWidget {
-                background-color: #ffffff;  /* 콘텐츠 영역 배경: 흰색 */
+                background-color: #f0f0f0;  /* 콘텐츠 영역 배경: 흰색 */
             }
         """)
 

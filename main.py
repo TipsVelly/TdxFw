@@ -2,11 +2,16 @@
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget
+from PyQt5.QtCore import Qt
+
 from views.header import Header
 from views.side_menu import SideMenu
 from views.content_area import ContentArea
 from widgets.content_manager import get_content_widget
-from PyQt5.QtCore import Qt
+
+from views.template_dialog import TemplateDialog
+from views.template_edit import TemplateEdit  # TemplateEdit 페이지 임포트
+
 
 class MainApp(QMainWindow):
     def __init__(self):
@@ -16,8 +21,17 @@ class MainApp(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.init_ui()
 
+        # 데이터 저장소 초기화
+        self.stored_data = {
+            "ViewName": "",
+            "URLPattern": "",
+            "Title": "",
+            "ProxyApply": False,
+            "ODataSet": ""
+        }
+
     def init_ui(self):
-        self.setWindowTitle('헤더, 메뉴, 콘텐츠 레이아웃')
+        self.setWindowTitle('TDXFW')
         self.setGeometry(100, 100, 1200, 800)
 
         # 메인 위젯과 레이아웃 설정
@@ -78,12 +92,32 @@ class MainApp(QMainWindow):
             button.clicked.connect(self.handle_menu_button_clicked)
 
     def handle_menu_button_clicked(self, menu_name):
-        self.content_area.set_title(menu_name)
-        content_widget = get_content_widget(menu_name)
-        if content_widget is not None:
-            self.content_area.set_content_widget(content_widget)
+        if menu_name == "OData":  # 다이얼로그를 열 메뉴 이름
+            self.open_template_dialog()
         else:
-            self.content_area.set_content_widget(QWidget())  # 빈 위젯 설정
+            self.content_area.set_title(menu_name)
+            content_widget = get_content_widget(menu_name)
+            if content_widget is not None:
+                self.content_area.set_content_widget(content_widget)
+            else:
+                self.content_area.set_content_widget(QWidget())  # 빈 위젯 설정
+
+    def open_template_dialog(self):
+        # 다이얼로그 열기, 현재 저장된 데이터를 전달
+        dialog = TemplateDialog(image_path="images/BasicTemplateSample.png", data=self.stored_data, parent=self)
+        dialog.apply_clicked.connect(self.handle_dialog_apply)
+        dialog.exec_()  # 모달 다이얼로그로 실행
+
+    def handle_dialog_apply(self, data):
+        # 다이얼로그에서 전달된 데이터를 저장
+        self.stored_data = data
+        # 템플릿 편집 페이지 생성 및 데이터 설정
+        template_edit_page = TemplateEdit()
+        template_edit_page.update_data(self.stored_data)
+        # 콘텐츠 영역에 템플릿 편집 페이지 설정
+        self.content_area.set_content_widget(template_edit_page)
+        self.content_area.set_title("Template Edit")  # 타이틀 업데이트
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

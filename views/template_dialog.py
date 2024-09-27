@@ -5,21 +5,31 @@ from PyQt5.QtWidgets import (
     QLineEdit, QComboBox, QCheckBox, QPushButton, QSizePolicy
 )
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 
 class TemplateDialog(QDialog):
-    def __init__(self, image_path, parent=None):
+    # "Apply" 버튼 클릭 시 데이터를 전달하는 시그널 정의
+    apply_clicked = pyqtSignal(dict)
+
+    def __init__(self, image_path, data=None, parent=None):
         super().__init__(parent)
         self.image_path = image_path
+        self.data = data.copy() if data else {
+            "ViewName": "",
+            "URLPattern": "",
+            "Title": "",
+            "ProxyApply": False,
+            "ODataSet": ""
+        }
         self.init_ui()
 
     def init_ui(self):
-        # 다이얼로그 크기 설정
+        # 다이얼로그 속성 설정
         self.setWindowTitle("템플릿 다이얼로그")
         self.setFixedSize(1100, 700)
 
-        # 헤더 높이를 전체 높이의 5%로 설정
+        # 다이얼로그의 전체 높이의 5%를 헤더 높이로 설정
         header_height = int(700 * 0.05)  # 35px
 
         # 메인 수직 레이아웃 생성
@@ -68,10 +78,9 @@ class TemplateDialog(QDialog):
         # 좌측 레이아웃에 남은 공간을 채워 아래쪽 여백을 없앰
         left_layout.addStretch()
 
-        # 좌측 위젯 생성 및 레이아웃 설정
         left_widget = QWidget()
         left_widget.setLayout(left_layout)
-        left_widget.setFixedWidth(780)  # 좌측 위젯 너비 고정
+        left_widget.setFixedWidth(780)
         left_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
 
         # 우측 레이아웃 생성 (파일설정)
@@ -90,69 +99,63 @@ class TemplateDialog(QDialog):
         right_widget.setStyleSheet("background-color: #f0f0f0;")
         right_widget_layout = QVBoxLayout()
         right_widget_layout.setContentsMargins(0, 0, 0, 0)
-        right_widget_layout.setSpacing(2)  # 라벨과 컨트롤 간 간격을 2px로 설정
+        right_widget_layout.setSpacing(2)  # 라벨과 컨트롤 간 간격 2px
 
-        # 'ViewName' 라벨 및 입력 필드
-        view_name_label = QLabel("ViewName:")
-        view_name_label.setStyleSheet("font-size: 14px;")
-        view_name_input = QLineEdit()
-        view_name_layout = QVBoxLayout()
-        view_name_layout.setContentsMargins(0, 0, 0, 1)  # 라벨과 필드 간 1px
-        view_name_layout.setSpacing(1)
-        view_name_layout.addWidget(view_name_label)
-        view_name_layout.addWidget(view_name_input)
+        # Function to create label and input with minimal spacing
+        def create_field(label_text, widget):
+            layout = QVBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 1)
+            layout.setSpacing(1)
+            label = QLabel(label_text)
+            label.setStyleSheet("font-size: 14px;")
+            layout.addWidget(label)
+            layout.addWidget(widget)
+            return layout
+
+        # ViewName
+        self.view_name_input = QLineEdit()
+        self.view_name_input.setText(self.data.get("ViewName", ""))
+        view_name_layout = create_field("ViewName:", self.view_name_input)
         right_widget_layout.addLayout(view_name_layout)
 
-        # URL Pattern 라벨 및 입력 필드
-        url_pattern_label = QLabel("URL Pattern:")
-        url_pattern_label.setStyleSheet("font-size: 14px;")
-        url_pattern_input = QLineEdit()
-        url_pattern_layout = QVBoxLayout()
-        url_pattern_layout.setContentsMargins(0, 0, 0, 1)
-        url_pattern_layout.setSpacing(1)
-        url_pattern_layout.addWidget(url_pattern_label)
-        url_pattern_layout.addWidget(url_pattern_input)
+        # URL Pattern
+        self.url_pattern_input = QLineEdit()
+        self.url_pattern_input.setText(self.data.get("URLPattern", ""))
+        url_pattern_layout = create_field("URL Pattern:", self.url_pattern_input)
         right_widget_layout.addLayout(url_pattern_layout)
 
-        # Title 라벨 및 입력 필드
-        title_label = QLabel("Title:")
-        title_label.setStyleSheet("font-size: 14px;")
-        title_input = QLineEdit()
-        title_layout = QVBoxLayout()
-        title_layout.setContentsMargins(0, 0, 0, 1)
-        title_layout.setSpacing(1)
-        title_layout.addWidget(title_label)
-        title_layout.addWidget(title_input)
+        # Title
+        self.title_input = QLineEdit()
+        self.title_input.setText(self.data.get("Title", ""))
+        title_layout = create_field("Title:", self.title_input)
         right_widget_layout.addLayout(title_layout)
 
-        # 프록시 적용 여부 라벨 및 체크박스
+        # Proxy Apply
+        self.proxy_checkbox = QCheckBox()
+        self.proxy_checkbox.setChecked(self.data.get("ProxyApply", False))
         proxy_label = QLabel("프록시 적용 여부:")
         proxy_label.setStyleSheet("font-size: 14px;")
-        proxy_checkbox = QCheckBox()
         proxy_layout = QHBoxLayout()
         proxy_layout.setContentsMargins(0, 0, 0, 1)
         proxy_layout.setSpacing(1)
         proxy_layout.addWidget(proxy_label)
-        proxy_layout.addWidget(proxy_checkbox)
+        proxy_layout.addWidget(self.proxy_checkbox)
         proxy_layout.addStretch()
-        right_widget_layout.addLayout(proxy_layout)
+        proxy_container = QWidget()
+        proxy_container.setLayout(proxy_layout)
+        right_widget_layout.addWidget(proxy_container)
 
-        # ODataSet 라벨 및 콤보박스
-        odata_label = QLabel("ODataSet:")
-        odata_label.setStyleSheet("font-size: 14px;")
-        odata_select = QComboBox()
-        odata_select.addItems(["Option 1", "Option 2", "Option 3"])  # 예시 데이터
-        odata_layout = QVBoxLayout()
-        odata_layout.setContentsMargins(0, 0, 0, 1)
-        odata_layout.setSpacing(1)
-        odata_layout.addWidget(odata_label)
-        odata_layout.addWidget(odata_select)
+        # ODataSet
+        self.odata_select = QComboBox()
+        self.odata_select.addItems(["Option 1", "Option 2", "Option 3"])  # 예시 데이터
+        self.odata_select.setCurrentText(self.data.get("ODataSet", "Option 1"))
+        odata_layout = create_field("ODataSet:", self.odata_select)
         right_widget_layout.addLayout(odata_layout)
 
-        # 우측 위젯에 설정 폼 추가
+        # 설정 위젯 레이아웃 설정
         right_widget.setLayout(right_widget_layout)
-        right_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         right_widget.setFixedWidth(240)
+        right_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
 
         # 우측 레이아웃에 설정 위젯 추가
         right_layout.addWidget(right_widget)
@@ -160,11 +163,12 @@ class TemplateDialog(QDialog):
         # 우측 레이아웃에 남은 공간을 채워 'Apply' 버튼을 하단에 배치
         right_layout.addStretch()
 
-        # 'Apply' 버튼 추가
+        # Apply 버튼
         apply_button = QPushButton("Apply")
         apply_button.setStyleSheet("background-color: #2c66af; color: white; font-weight: bold;")
         apply_button.setFixedHeight(40)
         apply_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        apply_button.clicked.connect(self.on_apply)
         right_layout.addWidget(apply_button)
 
         # 우측 컨테이너 위젯 생성 및 레이아웃 설정
@@ -182,3 +186,17 @@ class TemplateDialog(QDialog):
 
         # 다이얼로그의 메인 레이아웃 설정
         self.setLayout(main_layout)
+
+    def on_apply(self):
+        # 필드에서 데이터 수집
+        data = {
+            "ViewName": self.view_name_input.text(),
+            "URLPattern": self.url_pattern_input.text(),
+            "Title": self.title_input.text(),
+            "ProxyApply": self.proxy_checkbox.isChecked(),
+            "ODataSet": self.odata_select.currentText()
+        }
+        # 데이터를 시그널을 통해 전달
+        self.apply_clicked.emit(data)
+        # 다이얼로그 닫기
+        self.accept()

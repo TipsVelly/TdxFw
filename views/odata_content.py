@@ -54,5 +54,6 @@ class ODataContent(QWidget):
 
     def handle_image_click(self, image_path):
         """이미지 레이블 클릭 시 다이얼로그 띄우는 메서드"""
-        dialog = TemplateDialog(image_path, self)
+        # 다이얼로그를 생성할 때 인자를 올바르게 전달
+        dialog = TemplateDialog(image_path=image_path, parent=self)
         dialog.exec_()  # 다이얼로그 실행

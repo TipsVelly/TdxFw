@@ -1,11 +1,12 @@
 # views/template_edit.py
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox,
     QPushButton, QSizePolicy, QScrollArea
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from views.table_template import TableTemplate
+
 
 class TemplateEdit(QWidget):
     def __init__(self):
@@ -70,6 +71,11 @@ class TemplateEdit(QWidget):
         left_layout = QVBoxLayout()
         left_layout.setContentsMargins(0, 0, 0, 0)  # 좌우측 레이아웃의 여백을 줄임
         left_layout.setSpacing(10)
+        # TableTemplate 위젯 추가
+        self.table_template = TableTemplate()
+        self.table_template.property_clicked.connect(self.update_property_setting)
+
+        left_layout.addWidget(self.table_template)
 
         # 스크롤 영역에 콘텐츠 위젯 추가
         scroll_area = QScrollArea()
@@ -186,8 +192,6 @@ class TemplateEdit(QWidget):
         # 메인 레이아웃에 콘텐츠 레이아웃 추가
         self.main_layout.addLayout(content_layout)
 
-
-
         # 전체 레이아웃 설정
         self.setLayout(self.main_layout)
 
@@ -217,3 +221,8 @@ class TemplateEdit(QWidget):
             if index != -1:
                 self.enable_select.setCurrentIndex(index)
         self.max_length_input.setText(data.get('MaxLength', ''))
+
+
+    def update_property_setting(self, property_name):
+        # 우측 설정 레이아웃의 {Property} setting 라벨 업데이트
+        self.right_title_label.setText(f"{property_name} setting")
